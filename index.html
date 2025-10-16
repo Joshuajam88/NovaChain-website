@@ -3,232 +3,281 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>NovaChain — Bitcoin Portal</title>
+    <title>NovaChain — Glass Portal v2</title>
+    <meta name="description" content="NovaChain — Bitcoin read-only dashboard"/>
     <style>
-    :root{/*-bg:#030406;--card:#0f1720;--muted:#9aa6b2;--accent:#4f46e5*/}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#02040a 0%, #071025 100%);color:#e6eef8}
-    .app{max-width:980px;margin:36px auto;padding:20px}
-    .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-    .header{display:flex;align-items:center;gap:14px}
-    .logo{width:56px;height:56px}
-    .title{font-size:20px;font-weight:700}
-    .small{color:var(--muted);font-size:13px}
-    .controls{display:flex;gap:8px;margin-top:14px}
-    .input{background:#0b1220;border:1px solid rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;color:#e6eef8;flex:1}
-    .btn{background:var(--accent);padding:10px 14px;border-radius:10px;color:white;border:none;cursor:pointer}
-    .grid{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:18px}
-    .info{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
-    .addr{font-family:monospace;background:#071026;padding:8px;border-radius:8px;word-break:break-all}
-    .tx{font-size:13px;padding:8px;border-radius:8px;background:#071026;margin-bottom:8px}
-    .adminBadge{display:inline-block;padding:4px 8px;border-radius:8px;background:#1f2937;color:#a7f3d0;font-weight:600}
-    .footer{margin-top:20px;text-align:center;color:var(--muted);font-size:13px}
-    .spinner{border:4px solid rgba(255,255,255,0.06);border-top:4px solid var(--accent);border-radius:50%;width:28px;height:28px;animation:spin 1s linear infinite;margin:auto}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .muted{color:var(--muted)}
-    .controls-right{display:flex;gap:8px}
-    .qrWrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px}
-    .adminPanel{margin-top:12;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(124,58,237,0.06), transparent)}
-    a.link{color:var(--accent);text-decoration:none}
+      :root{
+        --bg: rgba(2,6,23,1);
+        --glass: rgba(255,255,255,0.04);
+        --muted: #9aa6b2;
+        --accent1: #7c3aed;
+        --accent2: #06b6d4;
+        --card-blur: 8px;
+      }
+      *{box-sizing:border-box}
+      html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial, sans-serif;background:linear-gradient(180deg,#071025 0%, #02040a 100%);color:#e6eef8}
+      .wrap{max-width:1100px;margin:20px auto;padding:18px}
+      .nav{display:flex;align-items:center;gap:12px}
+      .logoText{font-weight:800;font-size:20px;letter-spacing:1px;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 6px 30px rgba(124,58,237,0.08)}
+      .topControls{margin-left:auto;display:flex;gap:8px;align-items:center}
+      .btn{background:linear-gradient(90deg,var(--accent1),var(--accent2));border:none;padding:10px 14px;border-radius:10px;color:white;cursor:pointer;box-shadow:0 6px 18px rgba(6,182,212,0.06)}
+      .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+      .glassCard{backdrop-filter:blur(var(--card-blur));background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+      .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
+      .input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(11,18,32,0.6);color:inherit}
+      .addr{font-family:monospace;background:rgba(7,16,38,0.6);padding:8px;border-radius:8px}
+      .small{color:var(--muted);font-size:13px}
+      .tx{padding:10px;border-radius:8px;background:rgba(7,16,38,0.6);margin-bottom:8px}
+      .adminBadge{display:inline-block;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,#06384b,#0b6d5a);color:#d8fde8;font-weight:700}
+      .footer{text-align:center;color:var(--muted);margin-top:16px;font-size:13px}
+      .modalBg{position:fixed;inset:0;background:rgba(2,6,23,0.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50}
+      .modal{width:90%;max-width:420px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.06);padding:18px;border-radius:12px} 
+      .tabs{display:flex;gap:8px;margin-bottom:12px}
+      .tabBtn{flex:1;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+      .tabActive{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white;border:none}
+      @media(max-width:820px){.grid{grid-template-columns:1fr} .topControls{flex-wrap:wrap}}
+      @media(max-width:420px){.logoText{font-size:18px} .btn{padding:8px 10px}}
     </style>
   </head>
   <body>
-    <div class="app">
-      <div class="card">
-        <div class="header">
-          <svg class="logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="g" x1="0" x2="1">
-                <stop offset="0" stop-color="#7c3aed" />
-                <stop offset="1" stop-color="#06b6d4" />
-              </linearGradient>
-            </defs>
-            <g>
-              <path d="M20 40a12 12 0 010-17l6-6a12 12 0 0117 17l-2 2" stroke="url(#g)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M44 24a12 12 0 010 17l-6 6a12 12 0 01-17-17l2-2" stroke="url(#g)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-            </g>
-          </svg>
-          <div>
-            <div class="title">NovaChain</div>
-            <div class="small">Bitcoin Portal — secure, read-only on-chain dashboard</div>
+    <div class="wrap">
+      <div class="nav">
+        <div class="logoText">NovaChain</div>
+        <div class="small" style="margin-left:8px;margin-top:4px">Bitcoin Glass Portal</div>
+        <div class="topControls">
+          <button id="connectWalletBtn" class="btn ghost">Connect Wallet</button>
+          <button id="openLogin" class="btn">Login / Register</button>
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <div class="glassCard" id="mainCard">
+            <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
+              <div>
+                <div class="small">Connected Address</div>
+                <div id="displayAddr" class="addr">Not connected</div>
+              </div>
+              <div style="text-align:right">
+                <div class="small">Balance</div>
+                <div id="displayBalance" style="font-weight:800;font-size:20px">— BTC</div>
+                <div class="small" id="displaySats">— sats</div>
+                <div id="adminFlag" style="margin-top:8px"></div>
+              </div>
+            </div>
+            <div style="margin-top:12;display:flex;gap:8px;align-items:center">
+              <input id="addrInput" class="input" placeholder="Enter or paste BTC bech32 address (bc1...)" />
+              <button id="viewBtn" class="btn">View</button>
+            </div>
+            <div id="error" style="color:#ffb4b4;margin-top:8px"></div>
+            <div id="txList" style="margin-top:12"></div>
           </div>
-          <div style="margin-left:auto">
-            <div id="adminBadge" class="adminBadge" style="display:none">ADMIN</div>
+          <div style="margin-top:12" class="glassCard">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-weight:700">Activity Feed</div>
+              <div class="small">Live on-chain data</div>
+            </div>
+            <div id="activity" style="margin-top:12"></div>
           </div>
         </div>
-
-        <div class="controls">
-          <input id="addrInput" class="input" placeholder="Enter Bitcoin address (bech32)" />
-          <div class="controls-right">
-            <button id="connectBtn" class="btn">Connect</button>
-            <button id="copyBtn" class="btn">Copy</button>
-          </div>
-        </div>
-
-        <div id="error" style="margin-top:12;color:#ffb4b4"></div>
-
-        <div class="grid">
-          <div>
-            <div style="margin-top:16" class="info card" id="mainInfo">
-              <div class="small">Enter a Bitcoin address to load on-chain info (balance & transactions). NovaChain only reads public blockchain data — we never ask for private keys or seed phrases.</div>
+        <div>
+          <div class="glassCard">
+            <div class="small">Network</div>
+            <div style="font-weight:800;margin-top:6px">Bitcoin Mainnet</div>
+            <div class="small" style="margin-top:10px">Admin address (locked)</div>
+            <div class="addr" id="adminAddr">bc1q2ld78maaw2qkc8usgqtcpvq2ua6x47lt3u0lsu</div>
+            <div style="margin-top:12">
+              <button id="openAdminPanel" class="btn">Open Admin Panel</button>
             </div>
           </div>
-
-          <div>
-            <div class="card info">
-              <div class="small">Network</div>
-              <div style="font-weight:700;margin-top:8">Bitcoin Mainnet</div>
-              <div class="small" style="margin-top:12">Admin address (configured):</div>
-              <div class="addr">bc1q2ld78maaw2qkc8usgqtcpvq2ua6x47lt3u0lsu</div>
-
-              <hr style="margin:12px 0;opacity:0.06" />
-              <div class="small">Developer tools</div>
-              <div style="margin-top:8">
-                <button id="openAdmin" class="btn">Open Admin Panel</button>
-              </div>
-
-              <div id="adminPanel" style="display:none" class="adminPanel"></div>
-
-              <hr style="margin:12px 0;opacity:0.06" />
-              <div class="small">Share</div>
-              <div class="qrWrap">
-                <div class="small">QR for this address</div>
-                <canvas id="qrCanvas" style="background:#071026;border-radius:8px"></canvas>
-                <div id="qrNote" class="muted" style="margin-top:8">Enter address to generate QR code</div>
-              </div>
-
-              <hr style="margin:12px 0;opacity:0.06" />
-              <div class="small">Security</div>
-              <div class="small" style="margin-top:8">NovaChain is read-only: we never ask for private keys or seed phrases. The "Send" buttons open the user's wallet via a bitcoin: URI — they do not move funds from this site.</div>
-            </div>
+          <div style="margin-top:12" class="glassCard">
+            <div class="small">Share</div>
+            <div style="margin-top:8px" class="small">Use QR or copy address</div>
+            <canvas id="qrCanvas" style="width:100%;background:rgba(7,16,38,0.6);border-radius:8px;height:128px"></canvas>
+            <div class="small" style="margin-top:8px">Tip: click address to copy</div>
           </div>
         </div>
-
-        <div class="footer">NovaChain • Bitcoin Portal • © 2025</div>
+      </div>
+      <div class="footer">NovaChain • Glass Portal • © 2025</div>
+    </div>
+    <div id="modalBg" class="modalBg">
+      <div class="modal glassCard">
+        <div style="text-align:center;margin-bottom:6px"><div style="font-weight:800;font-size:18px; background:linear-gradient(90deg,var(--accent1),var(--accent2)); -webkit-background-clip:text;background-clip:text;color:transparent">NovaChain</div></div>
+        <div class="tabs">
+          <button id="tabLogin" class="tabBtn tabActive">Login</button>
+          <button id="tabReg" class="tabBtn">Register</button>
+        </div>
+        <div id="formArea"></div>
+        <div style="margin-top:12;display:flex;justify-content:center">
+          <button id="closeModal" class="btn ghost">Close</button>
+        </div>
       </div>
     </div>
-
+    <div id="adminModal" class="modalBg">
+      <div class="modal glassCard" style="max-width:720px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800">Admin Dashboard</div>
+          <div><button id="closeAdmin" class="btn ghost">Close</button></div>
+        </div>
+        <div id="adminContent" style="margin-top:12"></div>
+      </div>
+    </div>
     <script>
-    const BLOCKSTREAM = 'https://blockstream.info/api';
-    const ADMIN = 'bc1q2ld78maaw2qkc8usgqtcpvq2ua6x47lt3u0lsu';
-
-    const el = (id)=>document.getElementById(id);
-    const addrInput = el('addrInput'), connectBtn = el('connectBtn'), copyBtn = el('copyBtn'), errorEl = el('error');
-    const mainInfo = el('mainInfo'), adminBadge = el('adminBadge'), openAdmin = el('openAdmin'), adminPanel = el('adminPanel');
-    const qrCanvas = el('qrCanvas'), qrNote = el('qrNote');
-
-    function validateBech32(a){
-      if(!a) return false;
-      return /^bc1[0-9a-zA-Z]{6,}$/i.test(a.trim());
-    }
-
-    async function fetchAddress(a){
-      errorEl.textContent = '';
-      mainInfo.innerHTML = '<div class="spinner"></div>';
-      adminBadge.style.display = 'none';
-      adminPanel.style.display = 'none';
-      qrNote.style.display = 'none';
-      qrCanvas.width = qrCanvas.height = 0;
-      try{
-        const res = await fetch(`${BLOCKSTREAM}/address/${a}`);
-        if(!res.ok) throw new Error('Address not found');
-        const data = await res.json();
-        const funded = data.chain_stats.funded_txo_sum || 0;
-        const spent = data.chain_stats.spent_txo_sum || 0;
-        const balanceSats = funded - spent;
-        const balanceBTC = (balanceSats/1e8).toFixed(8);
-
-        const txres = await fetch(`${BLOCKSTREAM}/address/${a}/txs`);
-        const txs = txres.ok ? await txres.json() : [];
-
-        // render main info
-        let html = `
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div class="small">Address</div>
-              <div class="addr">${a}</div>
+      const ADMIN = "bc1q2ld78maaw2qkc8usgqtcpvq2ua6x47lt3u0lsu";
+      const BLOCKSTREAM = "https://blockstream.info/api";
+      const addrInput = document.getElementById("addrInput");
+      const viewBtn = document.getElementById("viewBtn");
+      const displayAddr = document.getElementById("displayAddr");
+      const displayBalance = document.getElementById("displayBalance");
+      const displaySats = document.getElementById("displaySats");
+      const txList = document.getElementById("txList");
+      const activity = document.getElementById("activity");
+      const errorEl = document.getElementById("error");
+      const adminFlag = document.getElementById("adminFlag");
+      const qrCanvas = document.getElementById("qrCanvas");
+      const modalBg = document.getElementById("modalBg");
+      const openLogin = document.getElementById("openLogin");
+      const closeModal = document.getElementById("closeModal");
+      const tabLogin = document.getElementById("tabLogin");
+      const tabReg = document.getElementById("tabReg");
+      const formArea = document.getElementById("formArea");
+      const connectWalletBtn = document.getElementById("connectWalletBtn");
+      const adminModal = document.getElementById("adminModal");
+      const openAdminPanel = document.getElementById("openAdminPanel");
+      const adminContent = document.getElementById("adminContent");
+      const closeAdmin = document.getElementById("closeAdmin");
+      function saveUser(user){ localStorage.setItem("nc_user", JSON.stringify(user)); }
+      function getUser(){ const s = localStorage.getItem("nc_user"); return s? JSON.parse(s): null; }
+      function logout(){ localStorage.removeItem("nc_user"); renderUser(); }
+      function renderUser(){ const u = getUser(); if(u && u.addr){ displayAddr.textContent = u.addr; fetchAndRender(u.addr); } }
+      function showModal(){ modalBg.style.display = "flex"; renderLoginForm(); }
+      function hideModal(){ modalBg.style.display = "none"; }
+      openLogin.addEventListener("click", showModal);
+      closeModal.addEventListener("click", hideModal);
+      modalBg.addEventListener("click", (e)=>{ if(e.target===modalBg) hideModal(); });
+      tabLogin.addEventListener("click", ()=>{ tabLogin.classList.add("tabActive"); tabReg.classList.remove("tabActive"); renderLoginForm(); });
+      tabReg.addEventListener("click", ()=>{ tabReg.classList.add("tabActive"); tabLogin.classList.remove("tabActive"); renderRegisterForm(); });
+      function renderLoginForm(){
+        formArea.innerHTML = `
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <input id="loginEmail" class="input" placeholder="Email" />
+            <input id="loginPass" type="password" class="input" placeholder="Password" />
+            <div style="display:flex;gap:8px;justify-content:center">
+              <button id="doLogin" class="btn">Login</button>
             </div>
-            <div style="text-align:right">
-              <div class="small">Balance</div>
-              <div style="font-size:20px;font-weight:700">${balanceBTC} BTC</div>
-              <div class="small">${balanceSats} sats</div>
-            </div>
+            <div class="small" style="text-align:center;margin-top:8px">Or paste your BTC address to link your session</div>
+            <input id="linkAddr" class="input" placeholder="Paste BTC address (optional)" />
           </div>
-          <hr style="margin:12px 0;opacity:0.06" />
-          <div class="small" style="margin-bottom:8">Recent transactions (up to 10)</div>
         `;
-
-        if(!txs || txs.length===0){
-          html += '<div class="small">No recent transactions</div>';
-        } else {
-          txs.slice(0,10).forEach(tx=>{
-            const ts = tx.status && tx.status.block_time ? new Date(tx.status.block_time*1000).toLocaleString() : 'unconfirmed';
-            html += `<div class="tx"><div style="font-weight:700;font-size:13px">${tx.txid}</div><div class="small">Confirmations: ${tx.status && tx.status.confirmed ? 'Confirmed' : 'Unconfirmed'} • ${ts}</div><div style="margin-top:8"><a class="btn link" href="bitcoin:${a}?amount=0.0001" rel="noreferrer">Send (opens wallet)</a></div></div>`;
-          });
-        }
-
-        html += '<div style="margin-top:12;display:flex;gap:8"><button class="btn" id="exportBtn">Export TXs (CSV)</button></div>';
-
-        mainInfo.innerHTML = html;
-
-        // generate QR (simple)
+        document.getElementById("doLogin").addEventListener("click", ()=>{
+          const email = document.getElementById("loginEmail").value.trim();
+          const pass = document.getElementById("loginPass").value.trim();
+          const addr = document.getElementById("linkAddr").value.trim();
+          if(!email || !pass) return alert("Enter email and password");
+          const user = {email, addr: addr || null, addrNormalized: (addr||'').toLowerCase()};
+          saveUser(user);
+          hideModal();
+          renderUser();
+        });
+      }
+      function renderRegisterForm(){
+        formArea.innerHTML = `
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <input id="regUser" class="input" placeholder="Username" />
+            <input id="regEmail" class="input" placeholder="Email" />
+            <input id="regPass" type="password" class="input" placeholder="Password" />
+            <div style="display:flex;gap:8px;justify-content:center">
+              <button id="doReg" class="btn">Register</button>
+            </div>
+            <div class="small" style="text-align:center;margin-top:8px">You can link a BTC address later in your dashboard</div>
+          </div>
+        `;
+        document.getElementById("doReg").addEventListener("click", ()=>{
+          const username = document.getElementById("regUser").value.trim();
+          const email = document.getElementById("regEmail").value.trim();
+          const pass = document.getElementById("regPass").value.trim();
+          if(!username || !email || !pass) return alert("Complete all fields");
+          const user = {username, email};
+          saveUser(user);
+          hideModal();
+          renderUser();
+        });
+      }
+      connectWalletBtn.addEventListener("click", ()=>{
+        const paste = prompt("Paste your BTC bech32 address here (bc1...):");
+        if(paste && paste.trim()){ addrInput.value = paste.trim(); displayAddr.textContent = paste.trim(); fetchAndRender(paste.trim()); }
+      });
+      viewBtn.addEventListener("click", ()=>{
+        const a = addrInput.value.trim();
+        if(!a){ errorEl.textContent = "Enter address"; return; }
+        if(!/^bc1[0-9a-zA-Z]{6,}$/i.test(a)){ errorEl.textContent = "Invalid bech32 address"; return; }
+        errorEl.textContent = "";
+        displayAddr.textContent = a;
+        fetchAndRender(a);
+      });
+      document.getElementById("displayAddr").addEventListener("click", ()=>{
+        const t = document.getElementById("displayAddr").textContent.trim();
+        if(t && t!=="Not connected"){ navigator.clipboard.writeText(t).then(()=>alert("Address copied"), ()=>alert("Copy failed")); }
+      });
+      async function fetchAndRender(a){
+        displayBalance.textContent = "— BTC";
+        displaySats.textContent = "— sats";
+        txList.innerHTML = '<div class="small">Loading...</div>';
+        activity.innerHTML = "";
+        adminFlag.innerHTML = "";
         try{
-          const qr = await fetch('https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=' + encodeURIComponent(a));
-          const blob = await qr.blob();
-          const img = new Image();
-          img.onload = function(){ qrCanvas.width = img.width; qrCanvas.height = img.height; const ctx = qrCanvas.getContext('2d'); ctx.drawImage(img,0,0); qrNote.style.display='none'; };
-          img.src = URL.createObjectURL(blob);
+          const res = await fetch(BLOCKSTREAM + "/address/" + a);
+          if(!res.ok) throw new Error("Address not found");
+          const data = await res.json();
+          const funded = data.chain_stats.funded_txo_sum || 0;
+          const spent = data.chain_stats.spent_txo_sum || 0;
+          const balanceSats = funded - spent;
+          displayBalance.textContent = (balanceSats/1e8).toFixed(8) + " BTC";
+          displaySats.textContent = balanceSats + " sats";
+          if(a.toLowerCase() === ADMIN){ adminFlag.innerHTML = '<span class="adminBadge">ADMIN</span>'; }
+          const txres = await fetch(BLOCKSTREAM + "/address/" + a + "/txs");
+          const txs = txres.ok ? await txres.json() : [];
+          if(!txs || txs.length===0){ txList.innerHTML = '<div class="small">No recent txs</div>'; }
+          else {
+            txList.innerHTML = "";
+            txs.slice(0,10).forEach(function(tx){
+              const ts = tx.status && tx.status.block_time ? new Date(tx.status.block_time*1000).toLocaleString() : "unconfirmed";
+              const div = document.createElement("div");
+              div.className = "tx";
+              div.innerHTML = '<div style="font-weight:700;font-size:13px">'+tx.txid+'</div><div class="small">Confirmations: '+(tx.status && tx.status.confirmed ? "Confirmed" : "Unconfirmed")+' • '+ts+'</div><div style="margin-top:8px"><a class="btn link" href="bitcoin:'+a+'?amount=0.0001" rel="noreferrer">Send (open wallet)</a></div>';
+              txList.appendChild(div);
+            });
+            activity.innerHTML = "<div class='small'>Recent: </div>";
+            txs.slice(0,5).forEach(function(tx){
+              const li = document.createElement("div");
+              li.className = "small";
+              li.style.marginTop = "8px";
+              li.textContent = tx.txid + " — " + (tx.status && tx.status.block_time ? new Date(tx.status.block_time*1000).toLocaleString() : "unconfirmed");
+              activity.appendChild(li);
+            });
+          }
+          try{
+            const qr = await fetch("https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=" + encodeURIComponent(a));
+            const blob = await qr.blob();
+            const img = new Image();
+            img.onload = function(){ qrCanvas.getContext('2d').clearRect(0,0,qrCanvas.width,qrCanvas.height); qrCanvas.width = img.width; qrCanvas.height = img.height; qrCanvas.getContext('2d').drawImage(img,0,0); };
+            img.src = URL.createObjectURL(blob);
+          }catch(e){}
         }catch(e){
-          qrNote.style.display='block';
+          txList.innerHTML = "";
+          errorEl.textContent = e.message || "Fetch failed";
         }
-
-        // admin badge
-        if(a.trim().toLowerCase() === ADMIN){
-          adminBadge.style.display = 'inline-block';
-        }
-
-        // export handler
-        const exportBtn = document.getElementById('exportBtn');
-        if(exportBtn){
-          exportBtn.addEventListener('click', ()=>{
-            if(!txs || txs.length===0) return alert('No transactions to export');
-            const csv = txs.map(t=>`${t.txid},${t.status && t.status.block_time ? t.status.block_time : ''}`).join('\n');
-            const blob = new Blob([csv], {type:'text/csv'});
-            const url = URL.createObjectURL(blob);
-            const ael = document.createElement('a'); ael.href = url; ael.download = 'txs.csv'; ael.click(); URL.revokeObjectURL(url);
-          });
-        }
-
-      }catch(err){
-        mainInfo.innerHTML = '<div class="small">Enter a Bitcoin address to load on-chain info (balance & transactions). NovaChain only reads public blockchain data — we never ask for private keys or seed phrases.</div>';
-        errorEl.textContent = err.message || 'Fetch failed';
       }
-    }
-
-    connectBtn.addEventListener('click', ()=>{
-      const a = addrInput.value.trim();
-      if(!validateBech32(a)){
-        errorEl.textContent = 'Invalid Bech32 address (must start with bc1...)';
-        return;
-      }
-      fetchAddress(a);
-    });
-
-    copyBtn.addEventListener('click', ()=>{
-      const a = addrInput.value.trim();
-      if(!a) return alert('No address to copy');
-      navigator.clipboard.writeText(a).then(()=>alert('Address copied to clipboard'), ()=>alert('Copy failed'));
-    });
-
-    openAdmin.addEventListener('click', ()=>{
-      const a = addrInput.value.trim().toLowerCase();
-      if(a === ADMIN){
-        adminPanel.style.display = 'block';
-        adminPanel.innerHTML = '<div style="font-weight:700">Admin Dashboard</div><div class="small" style="margin-top:8">Note: this admin panel is read-only and unlocked only for the configured admin address.</div>';
-      } else {
-        alert('Admin access is locked to the configured admin address.');
-      }
-    });
+      openAdminPanel.addEventListener("click", function(){
+        var cur = displayAddr.textContent.trim().toLowerCase();
+        if(cur !== ADMIN){ alert("Admin access locked to configured admin address."); return; }
+        adminModal.style.display = "flex";
+        adminContent.innerHTML = "<div style='font-weight:800'>Admin Overview</div><div class='small' style='margin-top:8px'>Address: "+cur+"</div><div id='adminStats' class='small' style='margin-top:8px'>Loading...</div>";
+        fetch(BLOCKSTREAM + "/address/" + cur).then(function(r){ return r.json(); }).then(function(d){ var funded = d.chain_stats.funded_txo_sum||0; var spent = d.chain_stats.spent_txo_sum||0; var bal = (funded-spent)/1e8; document.getElementById("adminStats").textContent = "Balance: "+bal.toFixed(8)+" BTC • TXs: "+(d.chain_stats.tx_count||0); }).catch(function(){ document.getElementById("adminStats").textContent = "Failed to load"; });
+      });
+      closeAdmin.addEventListener("click", function(){ adminModal.style.display = "none"; });
+      adminModal.addEventListener("click",function(e){ if(e.target===adminModal) adminModal.style.display='none'; });
+      var savedUser = localStorage.getItem("nc_user");
+      if(savedUser){ try{ var u = JSON.parse(savedUser); if(u && u.addr) { addrInput.value = u.addr; displayAddr.textContent = u.addr; fetchAndRender(u.addr); } }catch(e){} }
     </script>
   </body>
 </html>
