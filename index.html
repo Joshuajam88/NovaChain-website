@@ -4,8 +4,231 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>NovaChain — Bitcoin Portal</title>
+    <style>
+    :root{/*-bg:#030406;--card:#0f1720;--muted:#9aa6b2;--accent:#4f46e5*/}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#02040a 0%, #071025 100%);color:#e6eef8}
+    .app{max-width:980px;margin:36px auto;padding:20px}
+    .card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .header{display:flex;align-items:center;gap:14px}
+    .logo{width:56px;height:56px}
+    .title{font-size:20px;font-weight:700}
+    .small{color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:8px;margin-top:14px}
+    .input{background:#0b1220;border:1px solid rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;color:#e6eef8;flex:1}
+    .btn{background:var(--accent);padding:10px 14px;border-radius:10px;color:white;border:none;cursor:pointer}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:18px}
+    .info{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
+    .addr{font-family:monospace;background:#071026;padding:8px;border-radius:8px;word-break:break-all}
+    .tx{font-size:13px;padding:8px;border-radius:8px;background:#071026;margin-bottom:8px}
+    .adminBadge{display:inline-block;padding:4px 8px;border-radius:8px;background:#1f2937;color:#a7f3d0;font-weight:600}
+    .footer{margin-top:20px;text-align:center;color:var(--muted);font-size:13px}
+    .spinner{border:4px solid rgba(255,255,255,0.06);border-top:4px solid var(--accent);border-radius:50%;width:28px;height:28px;animation:spin 1s linear infinite;margin:auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .muted{color:var(--muted)}
+    .controls-right{display:flex;gap:8px}
+    .qrWrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px}
+    .adminPanel{margin-top:12;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(124,58,237,0.06), transparent)}
+    a.link{color:var(--accent);text-decoration:none}
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div class="app">
+      <div class="card">
+        <div class="header">
+          <svg class="logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="g" x1="0" x2="1">
+                <stop offset="0" stop-color="#7c3aed" />
+                <stop offset="1" stop-color="#06b6d4" />
+              </linearGradient>
+            </defs>
+            <g>
+              <path d="M20 40a12 12 0 010-17l6-6a12 12 0 0117 17l-2 2" stroke="url(#g)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M44 24a12 12 0 010 17l-6 6a12 12 0 01-17-17l2-2" stroke="url(#g)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+          </svg>
+          <div>
+            <div class="title">NovaChain</div>
+            <div class="small">Bitcoin Portal — secure, read-only on-chain dashboard</div>
+          </div>
+          <div style="margin-left:auto">
+            <div id="adminBadge" class="adminBadge" style="display:none">ADMIN</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <input id="addrInput" class="input" placeholder="Enter Bitcoin address (bech32)" />
+          <div class="controls-right">
+            <button id="connectBtn" class="btn">Connect</button>
+            <button id="copyBtn" class="btn">Copy</button>
+          </div>
+        </div>
+
+        <div id="error" style="margin-top:12;color:#ffb4b4"></div>
+
+        <div class="grid">
+          <div>
+            <div style="margin-top:16" class="info card" id="mainInfo">
+              <div class="small">Enter a Bitcoin address to load on-chain info (balance & transactions). NovaChain only reads public blockchain data — we never ask for private keys or seed phrases.</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card info">
+              <div class="small">Network</div>
+              <div style="font-weight:700;margin-top:8">Bitcoin Mainnet</div>
+              <div class="small" style="margin-top:12">Admin address (configured):</div>
+              <div class="addr">bc1q2ld78maaw2qkc8usgqtcpvq2ua6x47lt3u0lsu</div>
+
+              <hr style="margin:12px 0;opacity:0.06" />
+              <div class="small">Developer tools</div>
+              <div style="margin-top:8">
+                <button id="openAdmin" class="btn">Open Admin Panel</button>
+              </div>
+
+              <div id="adminPanel" style="display:none" class="adminPanel"></div>
+
+              <hr style="margin:12px 0;opacity:0.06" />
+              <div class="small">Share</div>
+              <div class="qrWrap">
+                <div class="small">QR for this address</div>
+                <canvas id="qrCanvas" style="background:#071026;border-radius:8px"></canvas>
+                <div id="qrNote" class="muted" style="margin-top:8">Enter address to generate QR code</div>
+              </div>
+
+              <hr style="margin:12px 0;opacity:0.06" />
+              <div class="small">Security</div>
+              <div class="small" style="margin-top:8">NovaChain is read-only: we never ask for private keys or seed phrases. The "Send" buttons open the user's wallet via a bitcoin: URI — they do not move funds from this site.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">NovaChain • Bitcoin Portal • © 2025</div>
+      </div>
+    </div>
+
+    <script>
+    const BLOCKSTREAM = 'https://blockstream.info/api';
+    const ADMIN = 'bc1q2ld78maaw2qkc8usgqtcpvq2ua6x47lt3u0lsu';
+
+    const el = (id)=>document.getElementById(id);
+    const addrInput = el('addrInput'), connectBtn = el('connectBtn'), copyBtn = el('copyBtn'), errorEl = el('error');
+    const mainInfo = el('mainInfo'), adminBadge = el('adminBadge'), openAdmin = el('openAdmin'), adminPanel = el('adminPanel');
+    const qrCanvas = el('qrCanvas'), qrNote = el('qrNote');
+
+    function validateBech32(a){
+      if(!a) return false;
+      return /^bc1[0-9a-zA-Z]{6,}$/i.test(a.trim());
+    }
+
+    async function fetchAddress(a){
+      errorEl.textContent = '';
+      mainInfo.innerHTML = '<div class="spinner"></div>';
+      adminBadge.style.display = 'none';
+      adminPanel.style.display = 'none';
+      qrNote.style.display = 'none';
+      qrCanvas.width = qrCanvas.height = 0;
+      try{
+        const res = await fetch(`${BLOCKSTREAM}/address/${a}`);
+        if(!res.ok) throw new Error('Address not found');
+        const data = await res.json();
+        const funded = data.chain_stats.funded_txo_sum || 0;
+        const spent = data.chain_stats.spent_txo_sum || 0;
+        const balanceSats = funded - spent;
+        const balanceBTC = (balanceSats/1e8).toFixed(8);
+
+        const txres = await fetch(`${BLOCKSTREAM}/address/${a}/txs`);
+        const txs = txres.ok ? await txres.json() : [];
+
+        // render main info
+        let html = `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="small">Address</div>
+              <div class="addr">${a}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="small">Balance</div>
+              <div style="font-size:20px;font-weight:700">${balanceBTC} BTC</div>
+              <div class="small">${balanceSats} sats</div>
+            </div>
+          </div>
+          <hr style="margin:12px 0;opacity:0.06" />
+          <div class="small" style="margin-bottom:8">Recent transactions (up to 10)</div>
+        `;
+
+        if(!txs || txs.length===0){
+          html += '<div class="small">No recent transactions</div>';
+        } else {
+          txs.slice(0,10).forEach(tx=>{
+            const ts = tx.status && tx.status.block_time ? new Date(tx.status.block_time*1000).toLocaleString() : 'unconfirmed';
+            html += `<div class="tx"><div style="font-weight:700;font-size:13px">${tx.txid}</div><div class="small">Confirmations: ${tx.status && tx.status.confirmed ? 'Confirmed' : 'Unconfirmed'} • ${ts}</div><div style="margin-top:8"><a class="btn link" href="bitcoin:${a}?amount=0.0001" rel="noreferrer">Send (opens wallet)</a></div></div>`;
+          });
+        }
+
+        html += '<div style="margin-top:12;display:flex;gap:8"><button class="btn" id="exportBtn">Export TXs (CSV)</button></div>';
+
+        mainInfo.innerHTML = html;
+
+        // generate QR (simple)
+        try{
+          const qr = await fetch('https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=' + encodeURIComponent(a));
+          const blob = await qr.blob();
+          const img = new Image();
+          img.onload = function(){ qrCanvas.width = img.width; qrCanvas.height = img.height; const ctx = qrCanvas.getContext('2d'); ctx.drawImage(img,0,0); qrNote.style.display='none'; };
+          img.src = URL.createObjectURL(blob);
+        }catch(e){
+          qrNote.style.display='block';
+        }
+
+        // admin badge
+        if(a.trim().toLowerCase() === ADMIN){
+          adminBadge.style.display = 'inline-block';
+        }
+
+        // export handler
+        const exportBtn = document.getElementById('exportBtn');
+        if(exportBtn){
+          exportBtn.addEventListener('click', ()=>{
+            if(!txs || txs.length===0) return alert('No transactions to export');
+            const csv = txs.map(t=>`${t.txid},${t.status && t.status.block_time ? t.status.block_time : ''}`).join('\n');
+            const blob = new Blob([csv], {type:'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const ael = document.createElement('a'); ael.href = url; ael.download = 'txs.csv'; ael.click(); URL.revokeObjectURL(url);
+          });
+        }
+
+      }catch(err){
+        mainInfo.innerHTML = '<div class="small">Enter a Bitcoin address to load on-chain info (balance & transactions). NovaChain only reads public blockchain data — we never ask for private keys or seed phrases.</div>';
+        errorEl.textContent = err.message || 'Fetch failed';
+      }
+    }
+
+    connectBtn.addEventListener('click', ()=>{
+      const a = addrInput.value.trim();
+      if(!validateBech32(a)){
+        errorEl.textContent = 'Invalid Bech32 address (must start with bc1...)';
+        return;
+      }
+      fetchAddress(a);
+    });
+
+    copyBtn.addEventListener('click', ()=>{
+      const a = addrInput.value.trim();
+      if(!a) return alert('No address to copy');
+      navigator.clipboard.writeText(a).then(()=>alert('Address copied to clipboard'), ()=>alert('Copy failed'));
+    });
+
+    openAdmin.addEventListener('click', ()=>{
+      const a = addrInput.value.trim().toLowerCase();
+      if(a === ADMIN){
+        adminPanel.style.display = 'block';
+        adminPanel.innerHTML = '<div style="font-weight:700">Admin Dashboard</div><div class="small" style="margin-top:8">Note: this admin panel is read-only and unlocked only for the configured admin address.</div>';
+      } else {
+        alert('Admin access is locked to the configured admin address.');
+      }
+    });
+    </script>
   </body>
 </html>
